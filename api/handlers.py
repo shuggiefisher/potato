@@ -91,20 +91,23 @@ class BlogCommentHandler(BaseHandler):
 
 
 def create_or_edit_object(object, request, object_form, object_instance=None):
-    if request.POST['author'] == request.user.username and request.user.is_superuser:
-	form = object_form(request.POST, instance=object_instance)
-	if form.is_valid():
-	    if object_instance is not None:
-		form.cleaned_data['tweet'] = object_instance.tweet # the tweet cannot be changed once sent
-	    saved_new_object = form.save()
-	    if request.POST['method'] == 'POST': # send tweets only when new posts and comments are created
-		if len(saved_new_object.tweet) > 0:
-		    sendTweet(request.user, saved_new_object.tweet)
-	    return saved_new_object
+    form = object_form(request.POST, instance=object_instance)
+    if form.is_valid():
+	if request.user.is_authenticated:
+	    if request.user.is_superuser or BlogCommentForm.__name__ == 'BlogCommentForm': # You don't need to be a superuser to post comments
+		if object_instance is not None:
+		    form.cleaned_data['tweet'] = object_instance.tweet # the tweet cannot be changed once sent
+		saved_new_object = form.save()
+		if request.POST['method'] == 'POST': # send tweets only when new posts and comments are created
+		    if len(saved_new_object.tweet) > 0:
+			sendTweet(request.user, saved_new_object.tweet)
+		return saved_new_object
+	    else:
+		return rc.FORBIDDEN
 	else:
-	    return form.errors
+	    return rc.FORBIDDEN
     else:
-	return rc.FORBIDDEN
+	return form.errors
 
 def get_object_or_NOT_FOUND(klass, *args, **kwargs):
     """
