@@ -1,0 +1,38 @@
+{% for post in posts %}
+    <div id="{{ post.id }}" class="blog_post">
+        <h2 class="post_title_heading">
+            <a class="post_title" href="{% url view_blog_post post.slug %}">{{ post.title }}</a>
+            {% if request.user.is_superuser %}
+                <span class="pull-right">
+                    <button data-controls-modal="modal-edit_post" data-backdrop="true" data-keyboard="true" class="edit_post_button btn">edit</button>
+                    <form class="delete_post" id="delete_post">
+                        <input type="hidden" name="id" value="{{ post.id }}" />
+                        <button type="submit" class="btn delete_post_button">delete</button>
+                    </form>
+                </span>
+            {% endif %}
+        </h2>
+        <h6 class="post_author_and_date">
+            Posted by
+            <a href="http://twitter.com/{{ post.author.username }}">
+                @{{ post.author.username }}
+            </a>
+             on {{ post.created_at|date:"l j M Y" }}</h6>
+        <span class="post_body">{{ post.body }}</span>
+        <h6 class="post_comments">Comments :</h6>
+        {% for comment in post.comment_set.all %}
+        <blockquote class="post_comments_blockquote" style="padding-left: 10px;">
+            <a href="http://twitter.com/{{ comment.author.username }}">
+                <img class="comment_user_profile_image" alt="{{ comment.author.username }}'s profile image" src="{{ comment.author.social_auth.get.extra_data.profile_image_url }}" />
+            </a>
+            <div class="comment_quote">
+                <p>"{{ comment.comment }}"</p>
+                <small>@{{ comment.author.username }} at {{ comment.created_at|date:"fa l jS M Y" }}</small>
+            </div>
+        </blockquote>
+        {% endfor %}
+        <p>
+            <button data-controls-modal="{% if request.user.is_authenticated %}modal-new_comment{% else %}modal-login{% endif %}" data-backdrop="true" data-keyboard="true" class="add_comment_button btn small success">Add Comment</button>
+        </p>
+    </div>
+{% endfor %}

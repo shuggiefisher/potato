@@ -1,0 +1,211 @@
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <title>Salt-n-Sauce</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    
+    {% load media %}
+    {% include_media 'main.css' %}
+    {% include_media 'main.js' %}
+    <script src="{{ STATIC_URL }}js/bootstrap-modal.js"></script>
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  </head>
+
+  <body>
+
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          
+          <a class="brand" href="{% url front_page %}">Salt-n-Sauce</a>
+          
+          <ul class="nav secondary-nav">
+          {% if request.user.is_anonymous %}
+            <button data-controls-modal="modal-login" data-backdrop="true" data-keyboard="true" class="btn" style="margin-top: 5px;" type="submit">Sign in</button>
+          {% else %}
+            <li class="dropdown" data-dropdown="dropdown">
+              <a href="#" class="dropdown-toggle">
+                <img id="dropdown_profile_image" src="{{ request.user.social_auth.get.extra_data.profile_image_url }}" height="20" width="20" />
+                {{ request.user.username }}
+              </a>
+              <ul class="dropdown-menu">
+                <li class="divider"></li>
+                <li><a href="/logout?next={{ request.get_full_path }}">Sign out</a></li>
+              </ul>
+            </li>
+          {% endif %}
+          </ul>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="content">
+        <div class="page-header">
+          <a href="{% url front_page %}"><h1 id="page_title_text">The best thing to put on a potato?</h1></a>
+        </div>
+        <div class="row">
+          <div id="main_content" class="span10">
+            {% block main_content %}
+            {% endblock %}
+          </div>
+          <div class="span4">
+            {% if request.user.is_superuser %}
+              <span class="pull-right">
+                <button data-controls-modal="modal-new_post" data-backdrop="true" data-keyboard="true" class="btn success">New Post</button>
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>© R Kyle 2011</p>
+      </footer>
+
+    </div> <!-- /container -->
+    
+    
+    <div id="modal-login" class="modal hide fade in">
+      <div class="modal-header">
+        <a href="#" class="close">×</a>
+        <h3>Sign in to Salt-n-Sauce</h3>
+      </div>
+      <div class="modal-body">
+        <p>
+          <a href="/login/twitter?next={{ request.get_full_path }}" class="centred_connect_with_twitter_button connect_with_twitter_button">
+            <span>Connect with Twitter</span>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <div id="modal-new_post" class="modal hide fade in">
+      <div class="modal-header">
+        <a href="#" class="close">×</a>
+        <h3>New Post</h3>
+      </div>
+      <div class="modal-body">
+        <form id="new_post" class="form-stacked">
+          <input type="hidden" name="author" value="{% if request.user.is_authenticated %}{{ request.user.username }}{% endif %}" />
+          <div class="clearfix">
+            <label>Title
+              <div class="input">
+                <textarea name="title" id="new_post_title" maxlength="100" rows="1"></textarea>
+              </div>
+            </label>
+          </div>
+          <div class="clearfix">
+            <label>Text
+              <div class="input">
+                <textarea name="body" id="new_post_body" maxlength="5000"></textarea>
+              </div>
+            </label>
+          </div>
+          <div class="clearfix">
+            <label>Tweet
+              <div class="input">
+                <textarea name="tweet" id="new_post_tweet" maxlength="140"></textarea>
+              </div>
+            </label>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <span id="new_post_chars_remaining" class="chars_remaining pull-right label default" rel="twipsy" data-original-title="Characters remaining in tweet">140</span>
+        <button type="submit" id="create_post" class="btn primary">Create post</button>
+        </form>
+      </div>
+    </div>
+    
+    <div id="modal-new_comment" class="modal hide fade in">
+      <div class="modal-header">
+        <a href="#" class="close">×</a>
+        <h3>Post Comment</h3>
+      </div>
+      <div class="modal-body">
+        <form id="new_comment" class="form-stacked">
+          <input id="new_comment_post_id" type="hidden" name="post_id" />
+          <input id="new_comment_post_title" type="hidden" name="post" />
+          <input type="hidden" name="author" value="{% if request.user.is_authenticated %}{{ request.user.username }}{% endif %}" />
+          <div class="clearfix">
+            <label>Comment
+              <div class="input">
+                <textarea name="comment" id="new_comment_comment" maxlength="1000"></textarea>
+              </div>
+            </label>
+          </div>
+          <div class="clearfix">
+            <label>Tweet
+              <div class="input">
+                <textarea name="tweet" id="new_comment_tweet" maxlength="140"></textarea>
+              </div>
+            </label>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <span id="new_comment_chars_remaining" class="chars_remaining pull-right label default" rel="twipsy" data-original-title="Characters remaining in tweet">140</span>
+        <button type="submit" id="create_comment" class="btn primary">Post Comment</button>
+        </form>
+      </div>
+    </div>
+    
+    <div id="modal-edit_post" class="modal hide fade in">
+      <div class="modal-header">
+        <a href="#" class="close">×</a>
+        <h3>Edit Post</h3>
+      </div>
+      <div class="modal-body">
+        <form id="edit_post" class="form-stacked">
+          <input id="edit_post_id" type="hidden" name="id" />
+          <input type="hidden" name="author" value="{% if request.user.is_authenticated %}{{ request.user.username }}{% endif %}" />
+          <div class="clearfix">
+            <label>Title
+              <div class="input">
+                <textarea name="title" id="edit_post_title" maxlength="100" rows="1"></textarea>
+              </div>
+            </label>
+          </div>
+          <div class="clearfix">
+            <label>Text
+              <div class="input">
+                <textarea name="body" id="edit_post_body" maxlength="5000"></textarea>
+              </div>
+            </label>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" id="edit_post" class="btn primary">Edit post</button>
+        </form>
+      </div>
+    </div>
+    
+    <div id="loading_spinner"></div>
+    <script type="text/javascript">
+      var opts = {
+        lines: 12, // The number of lines to draw
+        length: 15, // The length of each line
+        width: 7, // The line thickness
+        radius: 19, // The radius of the inner circle
+        color: '#fff', // #rgb or #rrggbb
+        speed: 1, // Rounds per second
+        trail: 60, // Afterglow percentage
+        shadow: true // Whether to render a shadow
+      };
+      var target = document.getElementById('loading_spinner');
+      var spinner = new Spinner(opts).spin(target);
+    </script>
+
+  </body>
+</html>
